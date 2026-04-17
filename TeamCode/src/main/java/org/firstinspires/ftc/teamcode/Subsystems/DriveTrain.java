@@ -1,11 +1,10 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+package org.firstinspires.ftc.teamcode.Subsystems;
 
-import static org.firstinspires.ftc.teamcode.opModes.TeleOp.FarzoneTeleOpBlue.isBlueFar;
-import static org.firstinspires.ftc.teamcode.opModes.TeleOp.FarzoneTeleOpRed.isRedFar;
-import static org.firstinspires.ftc.teamcode.opModes.TeleOp.TeleOpBlue.isBlue;
-import static org.firstinspires.ftc.teamcode.opModes.TeleOp.TeleOpRed.isRed;
-import static org.firstinspires.ftc.teamcode.subsystems.Flywheel.shooter;
-import static org.firstinspires.ftc.teamcode.subsystems.ShooterCalc.calculateShotVectorandUpdateHeading;
+
+import static org.firstinspires.ftc.teamcode.OpModes.TeleOp.TeleOpBlue.isBlue;
+import static org.firstinspires.ftc.teamcode.OpModes.TeleOp.TeleOpRed.isRed;
+import static org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel.shooter;
+import static org.firstinspires.ftc.teamcode.Subsystems.Shooter.ShooterCalc.calculateShotVectorandUpdateHeading;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -25,7 +24,6 @@ import dev.nextftc.hardware.driving.MecanumDriverControlled;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
 import dev.nextftc.hardware.positionable.SetPosition;
-import dev.nextftc.hardware.powerable.SetPower;
 
 import java.util.function.Supplier;
 
@@ -128,8 +126,7 @@ public class DriveTrain implements Subsystem {
     private void setAlliance() {
         if      (isBlue())    { alliance =  1; far = false; }
         else if (isRed())     { alliance = -1; far = false; }
-        else if (isBlueFar()) { alliance =  1; far = true;  }
-        else if (isRedFar())  { alliance = -1; far = true;  }
+
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────

@@ -1,66 +1,40 @@
-package org.firstinspires.ftc.teamcode.opModes.TeleOp;
+package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.DistanceRed;
-import org.firstinspires.ftc.teamcode.subsystems.DriveTrain;
-import org.firstinspires.ftc.teamcode.subsystems.LimelightLocalization;
-import org.firstinspires.ftc.teamcode.subsystems.PositionalHood;
-import org.firstinspires.ftc.teamcode.subsystems.TempHood;
+import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
-import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.Gamepads;
 import dev.nextftc.ftc.NextFTCOpMode;
+import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.hardware.impl.MotorEx;
 
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "FarzoneTeleOpRed")
-public class FarzoneTeleOpRed extends NextFTCOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOpRed")
+public class TeleOpRed extends NextFTCOpMode {
 
     public MotorEx intakeMotor;
     public MotorEx transfer;
-    public FarzoneTeleOpRed() {
+    public TeleOpRed() {
         addComponents(
                 new PedroComponent(Constants::createFollower),
-                new SubsystemComponent(DistanceRed.INSTANCE, TempHood.INSTANCE, PositionalHood.INSTANCE, DriveTrain.INSTANCE, LimelightLocalization.INSTANCE/*, Intake.INSTANCE, Spindexer.INSTANCE*/),
+                new SubsystemComponent(DriveTrain.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
 
 
         );
     }
-
-    public static boolean redfar;
-    public static boolean isRedFar(){
-        return redfar;
+    public static boolean red;
+    public static boolean isRed(){
+        return red;
     }
-
-    public static int tagID;
-    public static boolean findMotif = false;
-    public static int ball1Color = 0; //green = 1, purple = 2
-    public static int ball2Color = 0;
-    public static int ball3Color = 0;
-
-    public static int getBall1Color() {
-        return ball1Color;
-    }
-
-    public static int getBall2Color() {
-        return ball2Color;
-    }
-    public static int getBall3Color() {
-        return ball3Color;
-    }
-    public boolean lift;
-    boolean lowerangle = false;
-
-
-
-
 
     public boolean liftmid;
     boolean loweranglemid = false;
@@ -94,16 +68,13 @@ public class FarzoneTeleOpRed extends NextFTCOpMode {
         return false;
     }
 
-
-
-
     private static final int APRILTAG_PIPELINE = 7;
     @Override
     public void onInit() {
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
         limelight.start();
-        redfar=true;
+        red=true;
         intakeMotor = new MotorEx("intake").reversed();
         transfer = new MotorEx("transfer").reversed();
         Gamepads.gamepad1().leftTrigger().greaterThan(0.3).whenBecomesTrue(()-> intakeMotor.setPower(1))
@@ -116,31 +87,11 @@ public class FarzoneTeleOpRed extends NextFTCOpMode {
                 .whenBecomesFalse(() -> intakeMotor.setPower(0));
         Gamepads.gamepad1().rightBumper().whenBecomesTrue(() -> DriveTrain.opentransfer.schedule())
                 .whenBecomesFalse(() -> DriveTrain.closeTransfer.schedule());
-
-
-
-
-
-
-
-
+        Gamepads.gamepad1().x().whenBecomesTrue(()->follower.setPose(new Pose(79.967,9.271,Math.toRadians(90))));
     }
 
     @Override
     public void onUpdate() {
-        /*float newtps=1000;
-        if(lowerangle==true){
-            newtps = findTPS44(DistanceRed.INSTANCE.getDistanceFromTag());
-            //ActiveOpMode.telemetry().addData("Lowerangle:", lowerangle);
-        }
-        else if(lowerangle==false) {
-            newtps = findTPS(DistanceRed.INSTANCE.getDistanceFromTag());
-            //ActiveOpMode.telemetry().addData("Lowerangle:", lowerangle);
-        }
-        if (DistanceRed.INSTANCE.getDistanceFromTag() != 0) {
-            shooter(newtps);
-            //ActiveOpMode.telemetry().addData("newtps", newtps);
-        }*/
     }
 
     public boolean shoot;
@@ -148,27 +99,10 @@ public class FarzoneTeleOpRed extends NextFTCOpMode {
     @Override
     public void onStartButtonPressed() {
 
-
-        //Gamepads.gamepad2().cross().whenBecomesTrue(() -> hood());
-        //Gamepads.gamepad2().triangle().whenBecomesTrue(() -> hoodMid());
-        /*SequentialGroup onStart= new SequentialGroup(
-                new Delay(2),
-                //TempHood.INSTANCE.HoodUp,
-                new SetPower(transfer, 0.25),
-                new Delay(0.01),
-                new SetPower(transfer, 0),
-                TempHood.INSTANCE.HoodUp,
-                new SetPower(transfer, 1),
-                new Delay(0.5),
-                TempHood.INSTANCE.HoodDown,
-                new SetPower(transfer, 0)
-        );
-        //int tag=MotifScanning.INSTANCE.findMotif();
-        onStart.schedule();*/
     }
 
 
     public void onStop(){
-        redfar=false;
+        red=false;
     }
 }
