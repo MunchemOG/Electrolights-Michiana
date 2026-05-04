@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.subsystems.transfer.Transfer;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
+import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.core.components.BindingsComponent;
@@ -61,7 +62,7 @@ public class TeleOpBlue extends NextFTCOpMode {
                 Transfer.INSTANCE.openTransfer,
                 new Delay(0.1),
                 Transfer.INSTANCE.transferOn,
-                new Delay(0.4),
+                new Delay(0.6),
                 Transfer.INSTANCE.transferOff,
                 Transfer.INSTANCE.closeTransfer
         );
@@ -70,56 +71,49 @@ public class TeleOpBlue extends NextFTCOpMode {
     @Override
     public void onInit() {
         blue = true;
+        DriveTrain.INSTANCE.matchStarted = false;
 
-        // === Gamepad 1 bindings ===
+        // Right trigger = shoot
+        Gamepads.gamepad1().rightTrigger().greaterThan(0.3)
+                .whenBecomesTrue(() -> buildShoot().schedule());
 
-        // Intake on/off
+        // Left trigger = intake + transfer slowly (parallel)
         Gamepads.gamepad1().leftTrigger().greaterThan(0.3)
-                .whenBecomesTrue(() -> Intake.INSTANCE.setPower(-1))
-                .whenBecomesFalse(() -> Intake.INSTANCE.setPower(0));
+                .whenBecomesTrue(() -> new ParallelGroup(
+                        new LambdaCommand().setStart(() -> Intake.INSTANCE.setPower(-0.6)).setIsDone(() -> true),
+                        new LambdaCommand().setStart(() -> Transfer.INSTANCE.setMotorPower(-0.4)).setIsDone(() -> true)
+                ).schedule())
+                .whenBecomesFalse(() -> {
+                    Intake.INSTANCE.setPower(0);
+                    Transfer.INSTANCE.setMotorPower(0);
+                });
 
-        // Autolock (auto-aim) hold
+        // Triangle = autolock toggle
         Gamepads.gamepad1().triangle()
                 .whenBecomesTrue(() -> DriveTrain.INSTANCE.setAutoLockTrue())
                 .whenBecomesFalse(() -> DriveTrain.INSTANCE.setAutoLockFalse());
 
-        // Localize pose
-        Gamepads.gamepad1().x()
+        // X = localize
+        Gamepads.gamepad1().cross()
                 .whenBecomesTrue(() -> DriveTrain.INSTANCE.getLocalize().schedule());
 
-        // Hood angle control
-        Gamepads.gamepad1().cross()
-                .whenBecomesTrue(() -> DriveTrain.INSTANCE.hoodControl());
-
-        // Shoot (right trigger)
-        Gamepads.gamepad1().rightTrigger().greaterThan(0.3)
-                .whenBecomesTrue(() -> buildShoot().schedule());
-
-        // === Gamepad 2 bindings ===
-
-        // Intake reverse
-        Gamepads.gamepad1().leftBumper()
+        // Circle = intake reverse
+        Gamepads.gamepad1().circle()
                 .whenBecomesTrue(() -> Intake.INSTANCE.setPower(1))
                 .whenBecomesFalse(() -> Intake.INSTANCE.setPower(0));
-
-        // Transfer motor reverse
-        Gamepads.gamepad1().rightBumper()
-                .whenBecomesTrue(() -> Transfer.INSTANCE.setMotorPower(1))
-                .whenBecomesFalse(() -> Transfer.INSTANCE.setMotorPower(0));
-    }
-
-    @Override
-    public void onUpdate() {
-        // Aiming and flywheel speed are managed in DriveTrain.periodic()
     }
 
     @Override
     public void onStartButtonPressed() {
-        // Sequences can be scheduled here when match starts
+        DriveTrain.INSTANCE.matchStarted = true;
     }
+
+    @Override
+    public void onUpdate() {}
 
     @Override
     public void onStop() {
         blue = false;
+        DriveTrain.INSTANCE.matchStarted = false;
     }
 }

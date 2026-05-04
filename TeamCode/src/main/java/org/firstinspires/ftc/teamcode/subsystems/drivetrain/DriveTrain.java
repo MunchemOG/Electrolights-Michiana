@@ -69,6 +69,9 @@ public class DriveTrain implements Subsystem {
     // === Far zone angle ===
     public static double farAngle = -0.37006585;
 
+    // === Match started flag — guards flywheel/hood in periodic ===
+    public boolean matchStarted = false;
+
     // === Localize command (set per alliance in initialize) ===
     public Command localize;
 
@@ -92,12 +95,14 @@ public class DriveTrain implements Subsystem {
     public Command getLocalize() {
         if (isBlue()) {
             return new LambdaCommand()
-                    .setStart(() -> follower().setPose(new Pose(15, 90, Math.toRadians(90))));
+                    .setStart(() -> follower().setPose(new Pose(15, 90, Math.toRadians(90))))
+                    .setIsDone(() -> true);
         } else if (isRed()) {
             return new LambdaCommand()
-                    .setStart(() -> follower().setPose(new Pose(129, 90, Math.toRadians(90))));
+                    .setStart(() -> follower().setPose(new Pose(129, 90, Math.toRadians(90))))
+                    .setIsDone(() -> true);
         }
-        return new LambdaCommand().setStart(() -> {});
+        return new LambdaCommand().setStart(() -> {}).setIsDone(() -> true);
     }
 
     /** Increments hood angle driver value. */
@@ -183,6 +188,7 @@ public class DriveTrain implements Subsystem {
     @Override
     public void initialize() {
         autolock = false;
+        matchStarted = false;
         follower = follower();
 
         if (!isBlue() && !isRed()) {
@@ -197,7 +203,8 @@ public class DriveTrain implements Subsystem {
                         ? new Pose(34, 9, Math.toRadians(90))
                         : new Pose(24, 72, Math.toRadians(90));
                 localize = new LambdaCommand()
-                        .setStart(() -> follower().setPose(new Pose(15, 90, Math.toRadians(90))));
+                        .setStart(() -> follower().setPose(new Pose(15, 90, Math.toRadians(90))))
+                        .setIsDone(() -> true);
                 localizeX = 136;
             }
             if (isRed()) {
@@ -207,7 +214,8 @@ public class DriveTrain implements Subsystem {
                         ? new Pose(110, 9, Math.toRadians(90))
                         : new Pose(120, 72, Math.toRadians(90));
                 localize = new LambdaCommand()
-                        .setStart(() -> follower().setPose(new Pose(129, 90, Math.toRadians(90))));
+                        .setStart(() -> follower().setPose(new Pose(129, 90, Math.toRadians(90))))
+                        .setIsDone(() -> true);
                 localizeX = 8;
             }
             follower().setStartingPose(startingPose);
@@ -237,6 +245,14 @@ public class DriveTrain implements Subsystem {
         if (isRed()) {
             goalX = 138;
             localizeX = 8;
+        }
+
+        // Don't run flywheel/hood until match starts
+        if (!matchStarted) {
+            ActiveOpMode.telemetry().addData("RobotX", follower().getPose().getX());
+            ActiveOpMode.telemetry().addData("RobotY", follower().getPose().getY());
+            ActiveOpMode.telemetry().update();
+            return;
         }
 
         Pose currPose = follower().getPose();
