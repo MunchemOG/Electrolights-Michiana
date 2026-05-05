@@ -46,9 +46,11 @@ public class TeleOpRed extends NextFTCOpMode {
         return new SequentialGroup(
                 Transfer.INSTANCE.openTransfer,
                 new Delay(0.1),
+                new LambdaCommand().setStart(() -> Intake.INSTANCE.setPower(-0.6)).setIsDone(() -> true),
                 Transfer.INSTANCE.transferOn,
                 new Delay(0.6),
                 Transfer.INSTANCE.transferOff,
+                new LambdaCommand().setStart(() -> Intake.INSTANCE.setPower(0)).setIsDone(() -> true),
                 Transfer.INSTANCE.closeTransfer
         );
     }
